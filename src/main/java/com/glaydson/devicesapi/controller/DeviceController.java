@@ -1,5 +1,7 @@
 package com.glaydson.devicesapi.controller;
 
+import com.glaydson.devicesapi.exception.DeviceInUseException;
+import com.glaydson.devicesapi.exception.InvalidDeviceStateException;
 import com.glaydson.devicesapi.exception.ResourceNotFoundException;
 import com.glaydson.devicesapi.model.Device;
 import com.glaydson.devicesapi.service.DeviceService;
@@ -50,15 +52,6 @@ public class DeviceController {
         return ResponseEntity.ok(devices);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Device> updateDevice(@PathVariable Long id, @RequestBody Device device) {
-        deviceService.getDeviceById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(DEVICE_NOT_FOUND_FOR_THIS_ID + id));
-        device.setId(id);
-        Device updatedDevice = deviceService.updateDevice(device);
-        return ResponseEntity.ok(updatedDevice);
-    }
-
     @PatchMapping("/{id}")
     public ResponseEntity<Device> partiallyUpdateDevice(@PathVariable Long id, @RequestBody Device device) {
         Device existingDevice = deviceService.getDeviceById(id)
@@ -66,15 +59,20 @@ public class DeviceController {
         if (device.getName() != null) existingDevice.setName(device.getName());
         if (device.getBrand() != null) existingDevice.setBrand(device.getBrand());
         if (device.getState() != null) existingDevice.setState(device.getState());
-        if (device.getCreationTime() != null) existingDevice.setCreationTime(device.getCreationTime());
+        if (device.getCreationTime() != null && !device.getCreationTime().equals(existingDevice.getCreationTime())) {
+            throw new InvalidDeviceStateException("Creation time cannot be updated");
+        }
         Device updatedDevice = deviceService.updateDevice(existingDevice);
         return ResponseEntity.ok(updatedDevice);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDevice(@PathVariable Long id) {
-        deviceService.getDeviceById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found for this id :: " + id));
+        Device existingDevice = deviceService.getDeviceById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(DEVICE_NOT_FOUND_FOR_THIS_ID + id));
+        if (existingDevice.getState() == Device.State.IN_USE) {
+            throw new DeviceInUseException("Devices in use cannot be removed");
+        }
         deviceService.deleteDevice(id);
         return ResponseEntity.noContent().build();
     }
