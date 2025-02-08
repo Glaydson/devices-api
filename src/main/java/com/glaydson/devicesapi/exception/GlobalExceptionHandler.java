@@ -1,3 +1,4 @@
+// src/main/java/com/glaydson/devicesapi/exception/GlobalExceptionHandler.java
 package com.glaydson.devicesapi.exception;
 
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> resourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidDeviceStateException.class)
+    public ResponseEntity<?> invalidDeviceStateException(InvalidDeviceStateException ex, WebRequest request) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DeviceInUseException.class)
+    public ResponseEntity<?> deviceInUseException(DeviceInUseException ex, WebRequest request) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)

@@ -12,7 +12,8 @@ import java.util.List;
 @RequestMapping("/api/devices")
 public class DeviceController {
 
-    private DeviceService deviceService;
+    public static final String DEVICE_NOT_FOUND_FOR_THIS_ID = "Device not found for this id :: ";
+    private final DeviceService deviceService;
 
     public DeviceController(DeviceService deviceService) {
         this.deviceService = deviceService;
@@ -27,7 +28,7 @@ public class DeviceController {
     @GetMapping("/{id}")
     public ResponseEntity<Device> getDeviceById(@PathVariable Long id) {
         Device device = deviceService.getDeviceById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found for this id :: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(DEVICE_NOT_FOUND_FOR_THIS_ID + id));
         return ResponseEntity.ok(device);
     }
 
@@ -52,7 +53,7 @@ public class DeviceController {
     @PutMapping("/{id}")
     public ResponseEntity<Device> updateDevice(@PathVariable Long id, @RequestBody Device device) {
         deviceService.getDeviceById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found for this id :: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(DEVICE_NOT_FOUND_FOR_THIS_ID + id));
         device.setId(id);
         Device updatedDevice = deviceService.updateDevice(device);
         return ResponseEntity.ok(updatedDevice);
@@ -61,7 +62,7 @@ public class DeviceController {
     @PatchMapping("/{id}")
     public ResponseEntity<Device> partiallyUpdateDevice(@PathVariable Long id, @RequestBody Device device) {
         Device existingDevice = deviceService.getDeviceById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found for this id :: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(DEVICE_NOT_FOUND_FOR_THIS_ID + id));
         if (device.getName() != null) existingDevice.setName(device.getName());
         if (device.getBrand() != null) existingDevice.setBrand(device.getBrand());
         if (device.getState() != null) existingDevice.setState(device.getState());
