@@ -71,18 +71,20 @@ class DeviceServiceTest {
     @Test
     void testUpdateDevice() {
         when(deviceRepository.findById(1L)).thenReturn(Optional.of(device));
-        when(deviceRepository.save(any(Device.class))).thenReturn(device);
-        device.setName("UpdatedName");
-        Device updatedDevice = deviceService.updateDevice(device);
+        Device savedDevice = new Device(1L, "UpdatedName", device.getBrand(), device.getState(), device.getCreationTime());
+        when(deviceRepository.save(any(Device.class))).thenReturn(savedDevice);
+        Device preUpdated = new Device(null, "UpdatedName", device.getBrand(), Device.State.IN_USE, device.getCreationTime());
+        Device updatedDevice = deviceService.updateDevice(1L, preUpdated);
         assertEquals("UpdatedName", updatedDevice.getName());
     }
 
     @Test
     void testUpdateDeviceInUse() {
-        Device existingDevice = new Device(1L, "Device1", "Brand1", Device.State.IN_USE, LocalDateTime.now());
-        when(deviceRepository.findById(1L)).thenReturn(Optional.of(existingDevice));
-        device.setName("UpdatedName");
-        assertThrows(DeviceInUseException.class, () -> deviceService.updateDevice(device));
+        when(deviceRepository.findById(2L)).thenReturn(Optional.of(device2));
+        Device preUpdated = new Device(2L, "UpdatedName", device2.getBrand(), Device.State.IN_USE, device2.getCreationTime());
+        assertThrows(DeviceInUseException.class, () -> deviceService.updateDevice(2L, preUpdated));
+        device2 = deviceService.getDeviceById(2L).orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+        assertEquals("Device2", device2.getName());
     }
 
     @Test
@@ -90,7 +92,7 @@ class DeviceServiceTest {
         Device existingDevice = new Device(1L, "Device1", "Brand1", Device.State.AVAILABLE, LocalDateTime.now());
         when(deviceRepository.findById(1L)).thenReturn(Optional.of(existingDevice));
         device.setCreationTime(LocalDateTime.now().plusDays(1));
-        assertThrows(InvalidDeviceStateException.class, () -> deviceService.updateDevice(device));
+        assertThrows(InvalidDeviceStateException.class, () -> deviceService.updateDevice(1L, device));
     }
 
     @Test

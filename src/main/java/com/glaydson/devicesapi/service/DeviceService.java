@@ -6,11 +6,13 @@ import com.glaydson.devicesapi.exception.InvalidDeviceStateException;
 import com.glaydson.devicesapi.exception.ResourceNotFoundException;
 import com.glaydson.devicesapi.model.Device;
 import com.glaydson.devicesapi.repository.DeviceRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class DeviceService {
 
@@ -43,21 +45,26 @@ public class DeviceService {
         return deviceRepository.findByState(state);
     }
 
-    public Device updateDevice(Device device) {
-        Device existingDevice = deviceRepository.findById(device.getId())
+    public Device updateDevice(Long id, Device device) {
+        Device existingDevice = deviceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Device not found for this id :: " + device.getId()));
 
-        if (existingDevice.getState() == Device.State.IN_USE) {
-            if (!existingDevice.getName().equals(device.getName()) || !existingDevice.getBrand().equals(device.getBrand())) {
-                throw new DeviceInUseException("Name and brand cannot be updated if the device is in use");
-            }
-        }
-
         if (device.getCreationTime() != null && !device.getCreationTime().equals(existingDevice.getCreationTime())) {
+            log.error("Creation time cannot be updated");
             throw new InvalidDeviceStateException("Creation time cannot be updated");
         }
 
-        return deviceRepository.save(device);
+        if (existingDevice.getState() == Device.State.IN_USE && (!existingDevice.getName().equals(device.getName()) || !existingDevice.getBrand().equals(device.getBrand()))) {
+            log.error("Device in use cannot have name and brand updated");
+            throw new DeviceInUseException("Name and brand cannot be updated if the device is in use");
+            }
+
+
+        existingDevice.setName(device.getName());
+        existingDevice.setBrand(device.getBrand());
+        existingDevice.setState(device.getState());
+
+        return deviceRepository.save(existingDevice);
     }
 
     public void deleteDevice(Long id) {
@@ -65,6 +72,7 @@ public class DeviceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Device not found for this id :: " + id));
 
         if (existingDevice.getState() == Device.State.IN_USE) {
+            log.error("Devices in use cannot be removed");
             throw new DeviceInUseException("Devices in use cannot be removed");
         }
 
