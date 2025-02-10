@@ -1,26 +1,29 @@
 services:
-  java_db:
-    container_name: java_db
-    image: postgres:17
-    environment:
-      POSTGRES_DB: devices_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+  server:
+    build:
+      context: .
     ports:
-      - "5432:5432"
-    volumes:
-      - ./data:/var/lib/postgresql/data
-  devices_app:
-    container_name: devices_app
-    image: glaydson/devices_app:1.0.0
-    build: .
-    ports:
-      - "8081:8081"
+      - 8082:8082
     depends_on:
-      - java_db
+      db:
+        condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://java_db:5432/devices_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
+      - POSTGRES_URL=jdbc:postgresql://db:5432/devices_db
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=devices_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
-    pgdata: {}
+  db-data:
