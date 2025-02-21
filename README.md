@@ -1,4 +1,4 @@
-# Devices API Spring Application
+# Devices API Spring Application - V1
 
 This project is a RESTful API for managing devices. It is built using Java, Spring Boot, and Maven, and it uses PostgreSQL as the database. The project is containerized using Docker and Docker Compose.
 
@@ -49,13 +49,12 @@ The API will be available at `http://localhost:8082/api/devices`.
 
 ## API Endpoints
 
-- `POST /api/devices`: Create a new device.
-- `GET /api/devices/{id}`: Get a device by ID.
-- `GET /api/devices`: Get all devices.
-- `GET /api/devices/brand/{brand}`: Get devices by brand.
-- `GET /api/devices/state/{state}`: Get devices by state.
-- `PATCH /api/devices/{id}`: Partially update a device.
-- `DELETE /api/devices/{id}`: Delete a device by ID.
+- `POST /api/v1/devices`: Create a new device.
+- `GET /api/v1/devices/{id}`: Get a device by ID.
+- `GET /api/v1/devices`: Get all devices.
+- `GET /api/v1/devices/search`: Search devices by name, brand, and state.
+- `PUT /api/v1/devices/{id}`: Update a device by ID.
+- `DELETE /api/v1/devices/{id}`: Delete a device by ID.
 
 ## Configuration
 
@@ -135,7 +134,7 @@ The `DeviceController` is defined in the `src/main/java/com/glaydson/devicesapi/
 
 ```java
 @RestController
-@RequestMapping("/api/devices")
+@RequestMapping("/api/v1/devices")
 public class DeviceController {
     // Controller methods
 }

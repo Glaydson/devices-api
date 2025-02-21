@@ -10,4 +10,6 @@ import java.util.List;
 public interface DeviceRepository extends JpaRepository<Device, Long> {
     List<Device> findByBrand(String brand);
     List<Device> findByState(Device.State state);
+
+    List<Device> findByBrandAndState(String brand, Device.State state);
 }

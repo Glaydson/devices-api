@@ -31,6 +31,13 @@ public class Device {
     @Column(name = "creation_time", updatable = false)
     private LocalDateTime creationTime;
 
+    public Device(String name, String brand, State state) {
+        this.name = name;
+        this.brand = brand;
+        this.state = state;
+        this.creationTime = LocalDateTime.now();
+    }
+
     public enum State {
         AVAILABLE,
         IN_USE,
